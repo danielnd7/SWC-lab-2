@@ -64,11 +64,17 @@ def new_measurement():
 
 @app.route('/listar')
 def show_measurements():
+    data_arr = [] # Lista para almacenar las cadenas formateadas
+
+    hostname = socket.gethostname()
+    title = f"<h2>Hostname : {hostname}</h2>"
+
+    data_arr.append(title)
+
     try:
         # Obtener todos los datos de la serie temporal 'temperature'
         data = redis.execute_command('TS.RANGE', 'temperature', '-', '+')
 
-        data_arr = [] # Lista para almacenar las cadenas formateadas
         for sample in data:
             formated_timestamp = convert_timestamp(sample[0])
             data_arr.append(f"<b>{formated_timestamp} -----> {sample[1]} °C </b>")
