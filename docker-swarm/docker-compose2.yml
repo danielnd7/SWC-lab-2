@@ -1,0 +1,50 @@
+version: "3"
+services:
+  web-api:
+    image: danielnem/api-measurements:v1.0
+    deploy:
+      replicas: 5
+      restart_policy:
+        condition: any # not just 'on-failure', so new replicas are started if one is stopped manually
+    ports:
+      - "4000:80"
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - webnet
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - webnet
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"   
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - webnet
+  grafana: 
+    image: grafana/grafana 
+    ports: 
+      - 3000:3000 
+    volumes: 
+      - grafana_data:/var/lib/grafana 
+    depends_on: 
+      - redis 
+    networks: 
+      - webnet 
+    environment: 
+      GF_INSTALL_PLUGINS: redis-datasource 
+volumes: 
+  grafana_data: 
+networks:
+  webnet:
